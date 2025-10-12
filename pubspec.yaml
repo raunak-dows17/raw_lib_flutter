@@ -1,0 +1,17 @@
+name: raw_lib
+description: A raw_lib node compatible request response pagination and file upload library.
+version: 1.0.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  path: ^1.9.1
+  args: ^2.7.0
+  flutter_secure_storage: any
+  shared_preferences: any
+  dio: any
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.24.0
