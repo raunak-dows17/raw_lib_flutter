@@ -13,7 +13,7 @@ class RawLibClient {
 
   RawLibClient({
     required String baseUrl,
-    this.rawqlPath = '/rawql',
+    required this.rawqlPath,
     this.tokenProvider,
     Dio? dio,
     InterceptorsWrapper? extraInterceptor,
@@ -43,9 +43,9 @@ class RawLibClient {
     if (extraInterceptor != null) _dio.interceptors.add(extraInterceptor);
   }
 
-  Future<RawQlResponse<T>> execute<T>({
+  Future<RawQlResponse<T>> call<T>({
     RawQlRequest? request,
-    Map<String, dynamic>? body,
+    dynamic? body,
     T Function(Map<String, dynamic>)? fromJson,
     File? file,
     List<File>? files,
@@ -55,10 +55,11 @@ class RawLibClient {
     void Function(int, int)? onReceiveProgress,
     void Function(int, int)? onSendProgress,
     Options? options,
+    bool isMultipart = false,
   }) async {
     Object bodyData;
 
-    if (file != null || (files != null && files.isNotEmpty)) {
+    if (file != null || (files != null && files.isNotEmpty) || isMultipart) {
       final formData = FormData.fromMap({
         ...?request?.toJson(),
         ...?body,
