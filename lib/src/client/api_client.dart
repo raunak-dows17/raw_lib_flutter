@@ -93,7 +93,7 @@ class RawLibClient {
       );
 
       if (res.data == null) {
-        throw Exception('No data in response');
+        throw DioException('No data in response');
       }
 
       return RawQlResponse<T>.fromJson(res.data!, fromJson);
