@@ -185,6 +185,7 @@ class RawQlPopulate {
   String toString() => 'RawQlPopulate(${toJson()})';
 }
 
+// Pipeline Step Types
 abstract class RawQlPipelineStep {
   Map<String, dynamic> toJson();
 
@@ -263,7 +264,7 @@ class SkipStep implements RawQlPipelineStep {
 }
 
 class ProjectStep implements RawQlPipelineStep {
-  final Map<String, int> project; // 0 or 1
+  final Map<String, dynamic> project;
 
   ProjectStep({required this.project});
 
@@ -276,8 +277,103 @@ class ProjectStep implements RawQlPipelineStep {
   String toString() => 'ProjectStep(${toJson()})';
 }
 
+class LookupStep implements RawQlPipelineStep {
+  final RawQlLookup lookup;
+
+  LookupStep({required this.lookup});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {'lookup': lookup.toJson()};
+  }
+
+  @override
+  String toString() => 'LookupStep(${toJson()})';
+}
+
+class UnwindStep implements RawQlPipelineStep {
+  final dynamic unwind; // String or RawQlUnwind
+
+  UnwindStep({required this.unwind});
+
+  @override
+  Map<String, dynamic> toJson() {
+    if (unwind is String) {
+      return {'unwind': unwind};
+    } else if (unwind is RawQlUnwind) {
+      return {'unwind': (unwind as RawQlUnwind).toJson()};
+    }
+    return {'unwind': unwind};
+  }
+
+  @override
+  String toString() => 'UnwindStep(${toJson()})';
+}
+
+class AddFieldsStep implements RawQlPipelineStep {
+  final Map<String, dynamic> addFields;
+
+  AddFieldsStep({required this.addFields});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {'addFields': addFields};
+  }
+
+  @override
+  String toString() => 'AddFieldsStep(${toJson()})';
+}
+
+class CountStep implements RawQlPipelineStep {
+  final String count;
+
+  CountStep({required this.count});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {'count': count};
+  }
+
+  @override
+  String toString() => 'CountStep(${toJson()})';
+}
+
+class GraphLookupStep implements RawQlPipelineStep {
+  final RawQlGraphLookup graphLookup;
+
+  GraphLookupStep({required this.graphLookup});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {'graphLookup': graphLookup.toJson()};
+  }
+
+  @override
+  String toString() => 'GraphLookupStep(${toJson()})';
+}
+
+class FacetStep implements RawQlPipelineStep {
+  final Map<String, List<RawQlPipelineStep>> facet;
+
+  FacetStep({required this.facet});
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {
+      'facet': facet.map((key, value) => MapEntry(
+            key,
+            value.map((step) => step.toJson()).toList(),
+          )),
+    };
+  }
+
+  @override
+  String toString() => 'FacetStep(${toJson()})';
+}
+
+// Aggregation Types
 class RawQlGroup {
-  final dynamic id; // String or Map<String, String>
+  final dynamic id; // String or Map<String, dynamic>
   final Map<String, RawQlAggregateField> fields;
 
   RawQlGroup({required this.id, required this.fields});
@@ -295,14 +391,111 @@ class RawQlGroup {
 
 class RawQlAggregateField {
   final String op; // 'count', 'sum', 'avg', 'min', 'max'
-  final List<String>? field;
+  final String? field;
 
   RawQlAggregateField({required this.op, this.field});
 
   Map<String, dynamic> toJson() {
-    return {'op': op, if (field != null && field!.isNotEmpty) 'field': field};
+    return {'op': op, if (field != null) 'field': field};
   }
 
   @override
   String toString() => 'RawQlAggregateField(${toJson()})';
+}
+
+// Lookup Types
+class RawQlLookup {
+  final String from;
+  final String localField;
+  final String foreignField;
+  final Map<String, dynamic>? let;
+  final List<RawQlPipelineStep>? pipeline;
+  final String? as;
+
+  RawQlLookup({
+    required this.from,
+    required this.localField,
+    required this.foreignField,
+    this.let,
+    this.pipeline,
+    this.as,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'from': from,
+      'localField': localField,
+      'foreignField': foreignField,
+      if (let != null) 'let': let,
+      if (pipeline != null)
+        'pipeline': pipeline!.map((step) => step.toJson()).toList(),
+      if (as != null) 'as': as,
+    };
+  }
+
+  @override
+  String toString() => 'RawQlLookup(${toJson()})';
+}
+
+class RawQlUnwind {
+  final String path;
+  final bool? preserveNullAndEmptyArrays;
+  final String? includeArrayIndex;
+
+  RawQlUnwind({
+    required this.path,
+    this.preserveNullAndEmptyArrays,
+    this.includeArrayIndex,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'path': path,
+      if (preserveNullAndEmptyArrays != null)
+        'preserveNullAndEmptyArrays': preserveNullAndEmptyArrays,
+      if (includeArrayIndex != null) 'includeArrayIndex': includeArrayIndex,
+    };
+  }
+
+  @override
+  String toString() => 'RawQlUnwind(${toJson()})';
+}
+
+class RawQlGraphLookup {
+  final String from;
+  final String startWith;
+  final String connectFromField;
+  final String connectToField;
+  final String as;
+  final int? maxDepth;
+  final String? depthField;
+  final dynamic restrictSearchWithMatch;
+
+  RawQlGraphLookup({
+    required this.from,
+    required this.startWith,
+    required this.connectFromField,
+    required this.connectToField,
+    required this.as,
+    this.maxDepth,
+    this.depthField,
+    this.restrictSearchWithMatch,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'from': from,
+      'startWith': startWith,
+      'connectFromField': connectFromField,
+      'connectToField': connectToField,
+      'as': as,
+      if (maxDepth != null) 'maxDepth': maxDepth,
+      if (depthField != null) 'depthField': depthField,
+      if (restrictSearchWithMatch != null)
+        'restrictSearchWithMatch': restrictSearchWithMatch,
+    };
+  }
+
+  @override
+  String toString() => 'RawQlGraphLookup(${toJson()})';
 }
