@@ -94,7 +94,22 @@ class RawLibClient {
       );
 
       if (res.data == null) {
-        throw DioException(message: 'No data in response');
+        throw DioException(
+          message: 'No data in response',
+          requestOptions: RequestOptions(
+            path: rawqlPath,
+            method: 'POST',
+            headers: requestOptions.headers ?? {},
+            contentType: requestOptions.contentType,
+            queryParameters: queryParams ?? {},
+            data: bodyData,
+            baseUrl: _dio.options.baseUrl,
+            receiveTimeout: _dio.options.receiveTimeout,
+            sendTimeout: _dio.options.sendTimeout,
+            connectTimeout: _dio.options.connectTimeout,
+          ),
+          response: res,
+        );
       }
 
       return RawQlResponse<T>.fromJson(res.data!, fromJson);
