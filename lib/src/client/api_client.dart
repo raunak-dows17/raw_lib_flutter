@@ -82,6 +82,8 @@ class RawLibClient {
       bodyData = {...?request?.toJson(), ...?body};
     }
 
+    final requestOptions = options ?? Options();
+
     try {
       final res = await _dio.post<Map<String, dynamic>>(
         rawqlPath,
